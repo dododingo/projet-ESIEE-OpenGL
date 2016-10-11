@@ -21,6 +21,7 @@
 #include "helperFunctions.h"
 
 #include "myObject3D.h"
+#include "myLights.h"
 
 using namespace std;
 
@@ -194,6 +195,18 @@ int main(int argc, char *argv[])
 	obj1->computeNormals();
 	obj1->createObjectBuffers();
  
+	//creating lights
+	myLights *current_lights = new myLights(shaderprogram1);
+	current_lights->addLight(glm::vec4(1.5, 0, 0, 1), glm::vec4(1.0, 0.5, 0.0, 0), glm::vec3(-1, 0, 0), 2);
+	//current_lights->addLight(glm::vec4(2, 0, 0, 1), glm::vec4(0.0, 0.2, 1.0, 0), glm::vec3(-3, 0, 0), 0);
+
+	glUniform1i(glGetUniformLocation(shaderprogram1, "numberofLights_shader"), current_lights->positions.size());
+	glUniform4fv(glGetUniformLocation(shaderprogram1, "light_colors"), current_lights->colors.size(), glm::value_ptr(current_lights->colors[0]));
+	glUniform4fv(glGetUniformLocation(shaderprogram1, "light_positions"), current_lights->positions.size(), glm::value_ptr(current_lights->positions[0]));
+	glUniform3fv(glGetUniformLocation(shaderprogram1, "light_directions"), current_lights->directions.size(), glm::value_ptr(current_lights->directions[0]));
+	glUniform1iv(glGetUniformLocation(shaderprogram1, "light_types"), current_lights->types.size(), &current_lights->types[0]);
+
+
 	// Game loop
 	while (!quit)
 	{
@@ -209,11 +222,8 @@ int main(int argc, char *argv[])
 		glUniformMatrix4fv(glGetUniformLocation(shaderprogram1, "myview_matrix"), 
 			               1, GL_FALSE, &view_matrix[0][0]);
 
-		glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(view_matrix)));
-		glUniformMatrix3fv(glGetUniformLocation(shaderprogram1, "mynormal_matrix"), 
-			               1, GL_FALSE, &normal_matrix[0][0]);
 
-		obj1->displayObject(0);
+		obj1->displayObject(shaderprogram1, view_matrix);
 		//obj1->displayNormals();
 
 		SDL_GL_SwapWindow(window);
