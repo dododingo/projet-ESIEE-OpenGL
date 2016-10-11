@@ -11,7 +11,6 @@ class myObject3D
 {
 public:
 	GLuint buffers[6];
-	GLuint CubeBuffers[2];
 	enum { VERTEX_BUFFER = 0, INDEX_BUFFER, NORMAL_BUFFER };
 
 	//vertices of the object
@@ -131,87 +130,63 @@ public:
 
 	//create object buffers to store shaders
 	void createObjectBuffers()
-	{		float vertices[3][2] = { {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f} };		glGenBuffers(4, buffers);
-		glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	{
+
+		glGenBuffers(4, buffers);
+
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[VERTEX_BUFFER]);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size()*12, &vertices.front(), GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[INDEX_BUFFER]);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * 12, &indices.front(), GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[NORMAL_BUFFER]);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * 12, &normals.front(), GL_STATIC_DRAW);
+
 	}
 
 	//draw the mesh
-	void displayObject(int render_method = 1)
+	void displayObject(GLuint shaderprogram, glm::mat4 viewmatrix)
 	{
-		if (render_method == 0) {
-			GLfloat CubeArray[48] = {
-				1.0f, 0.0f, 0.0f, -1.0f, 1.0f, -1.0f,
-				1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f,
-				1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
-				0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-				0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-				0.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f,
-				1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f,
-				1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f
-			};
 
-			GLuint IndiceArray[36] = {
-				0,1,2,2,1,3,
-				4,5,6,6,5,7,
-				3,1,5,5,1,7,
-				0,2,6,6,2,4,
-				6,7,0,0,7,1,
-				2,3,4,4,3,5
-			};
+		glUniformMatrix4fv(glGetUniformLocation(shaderprogram, "mymodel_matrix"), 1, GL_FALSE, &model_matrix[0][0]);
 
-			// Génération des buffers
-			glGenBuffers(2, CubeBuffers);
+		glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(viewmatrix*model_matrix)));
+		glUniformMatrix3fv(glGetUniformLocation(shaderprogram, "mynormal_matrix"), 1, GL_FALSE, &normal_matrix[0][0]);
 
-			// Buffer d'informations de vertex
-			glBindBuffer(GL_ARRAY_BUFFER, CubeBuffers[0]);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(CubeArray), CubeArray, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[VERTEX_BUFFER]);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-			// Buffer d'indices
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, CubeBuffers[1]);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(IndiceArray), IndiceArray, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[NORMAL_BUFFER]);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-
-			// Utilisation des données des buffers
-			glBindBuffer(GL_ARRAY_BUFFER, CubeBuffers[0]);
-			glVertexPointer(3, GL_FLOAT, 6 * sizeof(float), ((float*)NULL + (3)));
-			glColorPointer(3, GL_FLOAT, 6 * sizeof(float), 0);
-
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, CubeBuffers[1]);
-
-			// Activation d'utilisation des tableaux
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
-
-			// Rendu de notre géométrie
-			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
-		}
-
-		if (render_method == 1)
-		{
-			glBegin(GL_TRIANGLES);
-			for (unsigned int i = 0; i < indices.size(); i++)
-			{
-				glVertex3f(vertices[indices[i][0]].x, vertices[indices[i][0]].y, vertices[indices[i][0]].z);
-				glVertex3f(vertices[indices[i][1]].x, vertices[indices[i][1]].y, vertices[indices[i][1]].z);
-				glVertex3f(vertices[indices[i][2]].x, vertices[indices[i][2]].y, vertices[indices[i][2]].z);
-			}
-			glEnd();
-		}
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[INDEX_BUFFER]);
+		glDrawElements(GL_TRIANGLES, indices.size() * 3, GL_UNSIGNED_INT, 0);
 		 
 	}
 
 	//draw each vertices' normals
 	void displayNormals()
 	{
-		glBegin(GL_LINES);
-		for (unsigned int i = 0; i<vertices.size(); i++)
-		{
-			glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
-			glVertex3f(vertices[i].x + normals[i].x / 10.0f, vertices[i].y + normals[i].y / 10.0f, vertices[i].z + normals[i].z / 10.0f);
-		}
-		glEnd();
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[NORMAL_BUFFER]);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glDrawElements(GL_LINES, normals.size(), GL_UNSIGNED_INT, 0);
 	}
+
+	void translate(double x, double y, double z)
+	{
+		glm::mat4 tmp = glm::mat4(1.0f);
+		tmp = glm::translate(tmp, glm::vec3(x, y, z));
+		model_matrix = tmp * model_matrix;
+	}
+	void rotate(double axis_x, double axis_y, double axis_z, double angle)
+	{
+		glm::mat4 tmp = glm::mat4(1.0f);
+		tmp = glm::rotate(tmp, (float)angle, glm::vec3(axis_x, axis_y, axis_z));
+		model_matrix = tmp * model_matrix;
+	}
 };
