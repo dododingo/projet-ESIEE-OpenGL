@@ -3,9 +3,15 @@ c:\users\dododingo\desktop\projet-esiee-opengl\myproj\myLights.h(63): warning C4
 nfd.lib(nfd_win.obj) : warning LNK4075: ' /EDITANDCONTINUE' ignoré à cause de la spécification '/OPT:ICF'
 LINK : warning LNK4098: conflit entre la bibliothèque par défaut 'MSVCRTD' et les autres bibliothèques ; utilisez /NODEFAULTLIB:library
   Génération de code en cours
+<<<<<<< HEAD
   2 of 588 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
     1 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
+=======
+  0 of 588 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    16 functions had inline decision re-evaluated but remain unchanged
+>>>>>>> origin/master
   Fin de la génération du code
 nfd.lib(nfd_win.obj) : warning LNK4049: symbole défini localement _sprintf_s importé
 nfd.lib(nfd_common.obj) : warning LNK4099: PDB 'vc110.pdb' n'a pu être trouvé avec 'nfd.lib(nfd_common.obj)' ou sur 'C:\Users\dododingo\Desktop\projet-ESIEE-OpenGL\Release\vc110.pdb' ; l'objet sera lié sans informations de débogage
