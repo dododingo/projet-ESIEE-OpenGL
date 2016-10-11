@@ -89,6 +89,7 @@
     <None Include="shaders\light.vert.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="myLights.h" />
     <ClInclude Include="helperFunctions.h" />
     <ClInclude Include="myObject3D.h" />
     <ClInclude Include="shaders.h" />
